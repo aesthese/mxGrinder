@@ -54,7 +54,7 @@ def vote():
             r = requests.post('https://interaktiv.mx.dk/toolbox/advancedvotes/vote',
                               data={
                                   'id': pollID,
-                                  'vote': int(args.choice) + 1,
+                                  'vote': int(args.choice) - 1,
                                   'ci_csrf_token': ''})  # Tak til MX for en awesome anti-CSRF implementation.
 
             # Ved success får vi et 'status: ok' tilbage. Hvis ikke, break.
