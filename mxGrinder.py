@@ -4,7 +4,7 @@ import requests
 import time
 from bs4 import BeautifulSoup
 import os
-import sys
+# import sys
 
 # Bedøm platform ift. evt. fremtidig konsol clearing
 # if sys.platform=='win32':
