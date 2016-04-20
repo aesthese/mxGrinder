@@ -13,10 +13,27 @@ import os
 #     cmd = "clear"
 
 # Definer CLI arguments
-parser = argparse.ArgumentParser(description='Stemmer på en bestemt valgmulighed x antal gange i afstemninger på MX.dk')
-parser.add_argument('-u', '--url', help='URL til artiklen der indeholder afstemningen.', required=True)
-parser.add_argument('-t', '--times', help='Antal stemmer der skal afgives. 0 for uendeligt.', required=True)
-parser.add_argument('-c', '--choice', help='Valgmulighed i afstemningen, fra toppen.', required=True)
+parser = argparse.ArgumentParser(
+    description='Stemmer på en bestemt valgmulighed x antal gange i afstemninger på MX.dk')
+
+parser.add_argument(
+    '-u',
+    '--url',
+    help='URL til artiklen der indeholder afstemningen.',
+    required=True)
+
+parser.add_argument(
+    '-t',
+    '--times',
+    help='Antal stemmer der skal afgives. 0 for uendeligt.',
+    required=True)
+
+parser.add_argument(
+    '-c',
+    '--choice',
+    help='Valgmulighed i afstemningen, fra toppen.',
+    required=True)
+
 # parser.add_argument('-w', '--wizard', help='Start interaktiv version.', required=False, action='store_true')
 args = parser.parse_args()
 
