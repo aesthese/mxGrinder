@@ -70,24 +70,25 @@ def print_logo():
 ------------------------------------------------------------------------------------------"""
 
 
-def get_id(url):
+def get_poll_info(url):
     """
-    Find afstemningens ID fra artiklens HTML
+    Find afstemningens POST URL og ID fra artiklens kilde
     """
     r = requests.get(url)
     html = r.text
     soup = BeautifulSoup(html, "lxml")
-
     divs = soup.findAll('div', attrs={'class': 'interactive'})
-    poll_url = divs[0].find('a')['href']
-    return poll_url.rsplit('/', 1)[-1]
+    poll_id = divs[0].find('a')['href'].rsplit('/', 1)[-1]
+    poll_url = divs[0].find('a')['href'].rsplit('/', 2)[0] + "/vote"
+    poll_info = {"URL": poll_url, "ID": poll_id}
+    return poll_info
 
 
 def parse_url(url):
     return url if "://" in url else "http://" + url
 
 
-def vote(poll_id, choice, times):
+def vote(poll_info, choice, times):
     """
     Primært vote-funktions loop
     """
@@ -98,7 +99,8 @@ def vote(poll_id, choice, times):
     # Print logo
     print_logo()
 
-    print "Afstemningens ID: " + str(poll_id)
+    print "Afstemningens ID: " + str(poll_info["ID"])
+    print "Afstemningens URL: " + poll_info["URL"]
 
     i = 0
 
@@ -112,9 +114,9 @@ def vote(poll_id, choice, times):
                 break
 
             # Send POST request
-            r = requests.post('https://interaktiv.mx.dk/toolbox/advancedvotes/vote',
+            r = requests.post(poll_info["URL"],
                               data={
-                                  'id': poll_id,
+                                  'id': poll_info["ID"],
                                   'vote': choice - 1,
                                   'ci_csrf_token': ''})  # Tak til MX for en awesome anti-CSRF implementation.
 
@@ -124,7 +126,7 @@ def vote(poll_id, choice, times):
 
                 # Printer info om afstemningen efter hver clearing
                 print_logo()
-                print "Afstemningens ID: " + str(poll_id)
+                print "Afstemningens ID: " + str(poll_info["ID"])
 
             # Ved success får vi et 'status: ok' tilbage. Hvis ikke, break.
             if r.text != 'status: ok':
@@ -135,7 +137,7 @@ def vote(poll_id, choice, times):
             else:
                 print r.text
                 print "Stemt %d gang%s" % (i, "e"[i == 1:])
-                time.sleep(1)
+                #time.sleep(0.3)
 
     # Stop ved ctrl-C,
     except KeyboardInterrupt:
@@ -159,7 +161,8 @@ if args.url and args.times and args.choice:
     url = args.url
     choice = int(args.choice)
     times = int(args.times)
-    poll_id = get_id(url)
+    poll_info = get_poll_info(url)
+    poll_id = poll_info["ID"]
     vote(poll_id, choice, times)
 
 # Hvis ingen arguments er udfyldt, start interaktiv version
@@ -167,10 +170,13 @@ if not any(vars(args).values()):
 
     url = parse_url(
         get_option("Skriv URLen til artiklen der indeholder afstemningen:"))
+    
     choice = int(
         get_option("Hvilken svarmulighed vil du stemme på? 1 = første etc."))
+    
     times = int(
         get_option("Hvor mange stemmer vil du afgive? 0 for uendeligt."))
-    poll_id = get_id(url)
+    
+    poll_info = get_poll_info(url)
 
-    vote(poll_id, choice, times)
+    vote(poll_info, choice, times)
