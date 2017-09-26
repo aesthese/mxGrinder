@@ -1,11 +1,10 @@
 # coding=utf-8
-import argparse
-import requests
-import time
-from bs4 import BeautifulSoup
 import os
 import sys
-import urlparse
+
+import argparse
+import requests
+from bs4 import BeautifulSoup
 
 # Bedøm platform ift. konsol clearing
 if sys.platform == 'win32':
@@ -25,6 +24,7 @@ def get_option(ask):
     print
     return raw_input(ask + "\n")
 
+
 # Definer CLI arguments
 parser = argparse.ArgumentParser(
     formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -35,7 +35,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
     '-u',
     '--url',
-    help='URL til artiklen der indeholder afstemningen.',
+    help='URL til artiklen der indeholder afstemningen. (gælder også embeddede afstemninger på bt.dk)',
     required=False)
 
 parser.add_argument(
@@ -59,15 +59,22 @@ parser.add_argument(
 
 
 def print_logo():
-    print """
-##     ## ##     ##          ######   ########  #### ##    ## ########  ######## ########
-###   ###  ##   ##          ##    ##  ##     ##  ##  ###   ## ##     ## ##       ##     ##
-#### ####   ## ##           ##        ##     ##  ##  ####  ## ##     ## ##       ##     ##
-## ### ##    ###            ##   #### ########   ##  ## ## ## ##     ## ######   ########
-##     ##   ## ##           ##    ##  ##   ##    ##  ##  #### ##     ## ##       ##   ##
-##     ##  ##   ##          ##    ##  ##    ##   ##  ##   ### ##     ## ##       ##    ##
-##     ## ##     ## #######  ######   ##     ## #### ##    ## ########  ######## ##     ##
-------------------------------------------------------------------------------------------"""
+    print """+yyyyyyyyyyyyyyyyyyyyyyyyyyyys.
+yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy:
+yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy:
+yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy/
+yyyyyyyyyyyyyyyyyyyyyyyyyyyhhh/      `:/++:`     -::::::-.     -:::   -:::    :::-  `::::::-`     .:::::::::`  -:::::--`
+yyyyyyyyyyyyyyyyyyyyyyyyhhhhhh/    /dMMMMMMMy    NMMMMMMMMN/  `MMMd   NMMMy  -MMMo  +MMMMMMMMm/   yMMMMMMMMM` .MMMMMMMMMm-
+yyys//oo///so+//oo/+yhhh++hhhh/   hMMM+..sNNN/  :MMMy--+MMMo  +MMMo  :MMMMMo sMMM-  dMMM:-/mMMM-  NMMN------  oMMMo--sMMM/
+yyyy/ `+o/  /o+  yo`.so`.shhhh/  oMMM+  +++++.  yMMMhssdMMy`  hMMM.  yMMNNMM+dMMm  .MMMd   yMMM: :MMMMmmmm+   dMMMyssmMNs
+yyyyo -yyy `yyy. yhh-  /hhhhhh/  mMMM. -NMMMM`  NMMMmmMMMm:  `MMMm   NMMh:MMMMMMo  +MMM+  .NMMm  yMMMyssss.  .MMMNmmMMMd-
+yyyyo -yyy `hhh. yh/ :.`ohhhhh/  yMMMh//sMMMd  :MMMs  :MMMs  +MMMo  :MMM+ /MMMMM-  dMMMo+sNMMm.  NMMM+++++/  +MMM+  +MMM/
+yyys: .oy+ `ohh. /.`ohh/ -yhhh/  `sNMMMMNhMM+  yMMM:  +MMM/  hMMM.  yMMM.  oMMMm  .MMMMMMMmy/   :MMMMMMMMMy  dMMM.  sMMM.
+yyyyyyhhhhhhhhhhhhhhhhhhhhhhhh/     .--.  ``   ````    ```   ````   ````    ````   ``````        `````````   ````   ````
+yyyhhhhhhhhhhhhhhhhhhhhhhhhhhh/
+hhhhhhhhhhhhhhhhhhhhhhhhhhhhhh/
++yhhhhhhhhhhhhhhhhhhhhhhhhhhhs.
+"""
 
 
 def get_id(url):
@@ -90,12 +97,9 @@ def get_id(url):
     return poll_url.rsplit('/', 1)[-1]
 
 
-
 def show_options(id):
-
     r = requests.get("https://interaktiv.mx.dk/toolbox/" + votetype + "/get/" + id)
     soup2 = BeautifulSoup(r.text, "lxml")
-
 
     clear_console()
     print_logo()
@@ -107,12 +111,11 @@ def show_options(id):
     print
 
     for option in soup2.find_all("div", attrs={"class": "vote_button"}):
-        number = str(option)[36]
+        #print option
+        number = option.get("data-vote")
         text = option.text
         print "(%s) %s" % (number, text)
     print
-
-
 
 def parse_url(url):
     return url if "://" in url else "http://" + url
@@ -142,7 +145,6 @@ def vote(poll_id, choice, times):
                 print 'Stopper.'
                 break
 
-
             # Send POST request
             r = requests.post('https://interaktiv.mx.dk/toolbox/%s/vote' % votetype,
                               data={
@@ -167,12 +169,13 @@ def vote(poll_id, choice, times):
             else:
                 print r.text
                 print "Stemt %d gang%s" % (i, "e"[i == 1:])
-                #time.sleep(0.3)
+                # time.sleep(0.3)
 
     # Stop ved ctrl-C,
     except KeyboardInterrupt:
         print ""
         print 'Stopper.'
+
 
 # Parser arguments
 args = parser.parse_args()
@@ -196,11 +199,9 @@ if args.url and args.times and args.choice:
 
 # Hvis ingen arguments er udfyldt, start interaktiv version
 if not any(vars(args).values()):
-
     url = parse_url(
         get_option("Skriv URLen til artiklen der indeholder afstemningen:"))
     print "Henter svarmuligheder..."
-
 
     poll_id = get_id(url)
 
@@ -208,12 +209,7 @@ if not any(vars(args).values()):
 
     choice = int(raw_input("Valgmulighed:" + "\n"))
 
-
     times = int(
         get_option("Hvor mange stemmer vil du afgive? 0 for uendeligt."))
-
-
-
-
 
     vote(poll_id, choice, times)
