@@ -47,7 +47,8 @@ parser.add_argument(
 parser.add_argument(
     '-c',
     '--choice',
-    help='Valgmulighed i afstemningen, fra toppen.',
+    help='Valgmulighed i afstemningen, fra toppen. I JA/NEJ afstemninger er JA=1 og NEJ=0.'
+         '(BUGGY! Tjek om stemmerne bliver afgivet rigtigt eller brug interaktiv version.)',
     required=False)
 
 parser.add_argument(
@@ -110,12 +111,28 @@ def show_options(id):
     print vote_text
     print
 
-    for option in soup2.find_all("div", attrs={"class": "vote_button"}):
-        #print option
-        number = option.get("data-vote")
-        text = option.text
-        print "(%s) %s" % (number, text)
-    print
+    if votetype == "advancedvotes":
+            for option in soup2.find_all("div", attrs={"class": "vote_button"}):
+
+                number = option.get("data-vote")
+                text = option.text
+
+                print "(%s) %s" % (number, text)
+            print
+
+    else:
+
+            for option in soup2.find_all("div", attrs={"class": "vote_button"}):
+                if option.get("id") == "vote_yes":
+                    number = "1"
+
+                else:
+                    number = "0"
+
+                text = option.text
+                print "(%s) %s" % (number, text)
+            print
+
 
 def parse_url(url):
     return url if "://" in url else "http://" + url
@@ -200,7 +217,7 @@ if args.url and args.times and args.choice:
 # Hvis ingen arguments er udfyldt, start interaktiv version
 if not any(vars(args).values()):
     url = parse_url(
-        get_option("Skriv URLen til artiklen der indeholder afstemningen:"))
+        get_option("Indsæt URLen til artiklen der indeholder afstemningen:"))
     print "Henter svarmuligheder..."
 
     poll_id = get_id(url)
